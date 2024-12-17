@@ -9,39 +9,26 @@ robot = 0
 
 for i, row in enumerate(grid):
     for j, value in enumerate(row):
+        if value == '.':
+            continue
         gridMap[j+i*1j] = value
         if value == '@':
             robot = j+i*1j
 
-def move(robot, gridMap, direction):
-    #handle trivial moves
-    if gridMap[robot+direction] == '.':
-        gridMap[robot] = '.'
-        gridMap[robot+direction] = '@'
-        robot = robot + direction
-        return robot, gridMap
-    #next to barrier
-    if gridMap[robot+direction] != '#':
-        #check movable
-        temp = robot
-        while True:
-            temp += direction
-            if gridMap[temp] == '#':
-                return robot, gridMap
-            if gridMap[temp] == '.':
-                break
-        while temp != robot+direction:
-            gridMap[temp] = 'O'
-            temp -= direction
-        gridMap[robot+direction] = '@'
-        gridMap[robot] = '.'
-        return robot+direction, gridMap
-    return robot, gridMap
+def move(item, gridMap, direction):
+    if item not in gridMap.keys():
+        return item, gridMap, True
+    if gridMap[item] in ['@', 'O']:
+        _, gridMap, movable = move(item+direction, gridMap, direction)
+        gridMap[item + direction*movable] = gridMap.pop(item)
+        return item + direction*movable, gridMap, movable
+    if gridMap[item] == '#':
+        return item, gridMap, False
 
 for i in instructions:
     if i == '\n':
         continue
-    robot, gridMap = move(robot, gridMap, directions[i])
+    robot, gridMap, _ = move(robot, gridMap, directions[i])
 
 total = 0
 for i in gridMap.keys():
